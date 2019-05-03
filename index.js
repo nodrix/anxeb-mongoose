@@ -12,5 +12,6 @@ module.exports = {
 	version     : pjson.version,
 	description : pjson.description,
 	Types       : mongoose.Schema.Types,
+	ObjectId    : mongoose.Types.ObjectId,
 	Schema      : mongoose.Schema
 };

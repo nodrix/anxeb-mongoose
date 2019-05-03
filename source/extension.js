@@ -28,6 +28,19 @@ module.exports = function (service, settings) {
 		return new Data(_self.service, _self.models, this);
 	};
 
+	Object.defineProperty(_self.service, 'models', {
+		get : function () {
+			if (_self.models && _self.models.list) {
+				if (_self.models.connection.connected) {
+					return _self.models.list;
+				} else {
+					_self.service.log.exception.data_server_offline.throw();
+				}
+			}
+			return null;
+		}
+	});
+
 	_self.start = function () {
 		return new Promise(function (resolve, reject) {
 			_self.connection.connect().then(function () {

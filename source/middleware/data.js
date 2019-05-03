@@ -12,6 +12,8 @@ module.exports = function (service, models, context) {
 	_self.list = {};
 	_self.retrieve = {};
 	_self.create = {};
+	_self.delete = {};
+	_self.aggregate = {};
 
 	let setupModel = function (model) {
 		if (model !== undefined && model !== null) {
@@ -36,9 +38,9 @@ module.exports = function (service, models, context) {
 	};
 
 	let FindContext = function (model) {
-		return function (params) {
+		return function (query) {
 			return new Promise(function (resolve, reject) {
-				model.findOne(params).then(function (data) {
+				model.findOne(query).then(function (data) {
 					setupModel(data);
 					resolve(data);
 				}).catch(function (err) {
@@ -52,9 +54,9 @@ module.exports = function (service, models, context) {
 	};
 
 	let ListContext = function (model) {
-		return function (params) {
+		return function (query) {
 			return new Promise(function (resolve, reject) {
-				model.find(params).then(function (data) {
+				model.find(query).then(function (data) {
 					if (data instanceof Array) {
 						for (var i = 0; i < data.length; i++) {
 							setupModel(data[i]);
@@ -87,11 +89,42 @@ module.exports = function (service, models, context) {
 		}
 	};
 
-	let CreateContext = function (model, name) {
-		return function () {
-			let newModel = new _models.list[name]();
+	let CreateContext = function (model) {
+		return function (params) {
+			let newModel = new model(params);
 			setupModel(newModel);
 			return newModel;
+		}
+	};
+
+	let DeleteContext = function (model) {
+		return function (query) {
+			return new Promise(function (resolve, reject) {
+
+				model.deleteMany(typeof query === 'object' ? query : { _id : query }).then(function () {
+					resolve();
+				}).catch(function (err) {
+					_self.service.log.exception.data_exception.args(err).throw(context);
+					if (reject) {
+						reject(err);
+					}
+				});
+			});
+		}
+	};
+
+	let AggregateContext = function (model) {
+		return function (params) {
+			return new Promise(function (resolve, reject) {
+				model.aggregate(params).then(function (data) {
+					resolve(data);
+				}).catch(function (err) {
+					_self.service.log.exception.data_exception.args(err).throw(context);
+					if (reject) {
+						reject(err);
+					}
+				});
+			});
 		}
 	};
 
@@ -101,7 +134,9 @@ module.exports = function (service, models, context) {
 			_self.find[key] = new FindContext(model);
 			_self.list[key] = new ListContext(model);
 			_self.retrieve[key] = new RetrieveContext(model);
-			_self.create[key] = new CreateContext(model, key);
+			_self.create[key] = new CreateContext(model);
+			_self.delete[key] = new DeleteContext(model);
+			_self.aggregate[key] = new AggregateContext(model);
 		}
 	}
 
