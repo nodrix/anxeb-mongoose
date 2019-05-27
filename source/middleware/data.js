@@ -11,6 +11,7 @@ module.exports = function (service, models, context) {
 	_self.find = {};
 	_self.list = {};
 	_self.retrieve = {};
+	_self.upsert = {};
 	_self.create = {};
 	_self.delete = {};
 	_self.aggregate = {};
@@ -22,7 +23,7 @@ module.exports = function (service, models, context) {
 					model.save().then(function (data) {
 						resolve(data);
 					}).catch(function (err) {
-						var valErr = utils.data.validate(err, context.log.exception.missing_fields);
+						let valErr = utils.data.validate(err, context.log.exception.missing_fields);
 						if (valErr) {
 							context.log.exception.data_validation_exception.args(valErr).throw(context);
 						} else {
@@ -38,9 +39,13 @@ module.exports = function (service, models, context) {
 	};
 
 	let FindContext = function (model) {
-		return function (query) {
+		return function (query, populate) {
 			return new Promise(function (resolve, reject) {
-				model.findOne(query).then(function (data) {
+				let call = model.findOne(query);
+				if (populate) {
+					call = call.populate(populate);
+				}
+				call.then(function (data) {
 					setupModel(data);
 					resolve(data);
 				}).catch(function (err) {
@@ -54,11 +59,15 @@ module.exports = function (service, models, context) {
 	};
 
 	let ListContext = function (model) {
-		return function (query) {
+		return function (query, populate) {
 			return new Promise(function (resolve, reject) {
-				model.find(query).then(function (data) {
+				let call = model.find(query);
+				if (populate) {
+					call = call.populate(populate);
+				}
+				call.then(function (data) {
 					if (data instanceof Array) {
-						for (var i = 0; i < data.length; i++) {
+						for (let i = 0; i < data.length; i++) {
 							setupModel(data[i]);
 						}
 					}
@@ -74,17 +83,57 @@ module.exports = function (service, models, context) {
 	};
 
 	let RetrieveContext = function (model) {
-		return function (objectid) {
+		return function (params, populate) {
 			return new Promise(function (resolve, reject) {
-				model.findById(objectid).then(function (data) {
+				if (params == null) {
+					resolve(null);
+				} else {
+					let call = null;
+					if (typeof params === 'string') {
+						call = model.findById(params);
+					} else {
+						call = model.findOne(params);
+					}
+					if (populate) {
+						call = call.populate(populate);
+					}
+					call.then(function (data) {
+						setupModel(data);
+						resolve(data);
+					}).catch(function (err) {
+						_self.service.log.exception.data_exception.args(err).throw(context);
+						if (reject) {
+							reject(err);
+						}
+					});
+				}
+			});
+		}
+	};
+
+	let UpsertContext = function (model) {
+		return function (objectId, params) {
+			return new Promise(function (resolve, reject) {
+				if (objectId == null) {
+					let data = new model(params);
 					setupModel(data);
 					resolve(data);
-				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
-					if (reject) {
-						reject(err);
-					}
-				});
+				} else {
+					model.findById(objectId).then(function (data) {
+						if (!data) {
+							data = new model(params);
+						} else {
+							utils.data.populate(data, params, true);
+						}
+						setupModel(data);
+						resolve(data);
+					}).catch(function (err) {
+						_self.service.log.exception.data_exception.args(err).throw(context);
+						if (reject) {
+							reject(err);
+						}
+					});
+				}
 			});
 		}
 	};
@@ -129,11 +178,12 @@ module.exports = function (service, models, context) {
 	};
 
 	if (_models && _models.list) {
-		for (var key in _models.list) {
+		for (let key in _models.list) {
 			let model = _models.list[key];
 			_self.find[key] = new FindContext(model);
 			_self.list[key] = new ListContext(model);
 			_self.retrieve[key] = new RetrieveContext(model);
+			_self.upsert[key] = new UpsertContext(model);
 			_self.create[key] = new CreateContext(model);
 			_self.delete[key] = new DeleteContext(model);
 			_self.aggregate[key] = new AggregateContext(model);

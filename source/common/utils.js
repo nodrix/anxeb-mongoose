@@ -4,6 +4,22 @@ const path = require('path');
 
 const utils = {
 	data : {
+		populate : function (obj, source, backward) {
+			var model = obj._doc || obj;
+			if (backward === true) {
+				for (var i in source) {
+					if (i !== '_id') {
+						obj[i] = source[i];
+					}
+				}
+			} else {
+				for (var i in model) {
+					if (source[i] !== undefined && i !== '_id') {
+						obj[i] = source[i];
+					}
+				}
+			}
+		},
 		copy     : function (obj) {
 			if (obj) {
 				return JSON.parse(JSON.stringify(obj));
