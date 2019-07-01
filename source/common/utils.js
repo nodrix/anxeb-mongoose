@@ -5,15 +5,15 @@ const path = require('path');
 const utils = {
 	data : {
 		populate : function (obj, source, backward) {
-			var model = obj._doc || obj;
+			let model = obj._doc || obj;
 			if (backward === true) {
-				for (var i in source) {
+				for (let i in source) {
 					if (i !== '_id') {
 						obj[i] = source[i];
 					}
 				}
 			} else {
-				for (var i in model) {
+				for (let i in model) {
 					if (source[i] !== undefined && i !== '_id') {
 						obj[i] = source[i];
 					}
@@ -29,32 +29,38 @@ const utils = {
 		},
 		validate : function (err, inner) {
 			if (err && err.name === 'ValidationError') {
-				var fields = [];
-				var message = '';
+				let fields = [];
+				for (let field in err.errors) {
+					let inmsg = null;
+					let item = err.errors[field];
 
-				for (var field in err.errors) {
+					if (item.name === 'ValidatorError') {
+						let fName = item.message;
+						let inx = fName.indexOf('/');
+						let pfield = {
+							name : field
+						};
 
-					var item = err.errors[field];
-					var fName = item.message;
+						if (inx > -1) {
+							let index = fName.substring(0, inx);
+							inmsg = fName.length > inx + 1 ? fName.substring(inx + 1) : null;
 
-					var inx = fName.indexOf('/');
-					if (inx > -1) {
-						var index = parseInt(fName.substring(0, inx));
-						fName = fName.substring(inx + 1);
-						fields.push({
-							name  : field,
-							index : index
-						});
-					} else {
-						fields.push({
-							name  : fName,
-							index : -1
-						});
+							if (isNaN(index)) {
+
+							} else {
+								pfield.index = parseInt(index);
+							}
+						}
+
+						if (inmsg != null && inmsg.length > 0) {
+							pfield.message = inmsg;
+						}
+
+						fields.push(pfield);
 					}
-					message += (message.length ? ', ' : '') + fName;
 				}
 
-				return inner.args(message).toError({ meta : { fields : fields } });
+				return inner.args(fields.map((field) => field.name).join(', ').trim()).toError({ meta : { fields : fields } });
 			} else {
 				return null;
 			}
