@@ -1,7 +1,8 @@
 'use strict';
 
-let mongoose = require("mongoose");
-let Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const paginate = require('mongoose-paginate-v2');
+const Schema = mongoose.Schema;
 
 module.exports = function (service, connection, modelsPath) {
 	let _self = this;
@@ -77,6 +78,13 @@ module.exports = function (service, connection, modelsPath) {
 					}
 				}
 			}
+
+			if (params.plugins) {
+				for (let p in params.plugins) {
+					schema.plugin(params.plugins[p]);
+				}
+			}
+			schema.plugin(paginate);
 
 			_self.list[params.name] = _self.connection.context.model(params.name, schema);
 		}

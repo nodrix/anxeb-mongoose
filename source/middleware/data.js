@@ -15,6 +15,8 @@ module.exports = function (service, models, context) {
 	_self.create = {};
 	_self.delete = {};
 	_self.aggregate = {};
+	_self.count = {};
+	_self.paginate = {};
 
 	let setupModel = function (model) {
 		if (model !== undefined && model !== null) {
@@ -89,11 +91,14 @@ module.exports = function (service, models, context) {
 	};
 
 	let FindContext = function (model) {
-		return function (query, populate) {
+		return function (query, populate, sort) {
 			return new Promise(function (resolve, reject) {
 				let call = model.findOne(query);
 				if (populate) {
 					call = call.populate(populate);
+				}
+				if (sort) {
+					call = call.sort(sort);
 				}
 				call.then(function (data) {
 					setupModel(data);
@@ -106,11 +111,15 @@ module.exports = function (service, models, context) {
 	};
 
 	let ListContext = function (model) {
-		return function (query, populate) {
+		//TODO: This params shoud be consolidated into one (all context classes apply)
+		return function (query, populate, sort) {
 			return new Promise(function (resolve) {
 				let call = model.find(query);
 				if (populate) {
 					call = call.populate(populate);
+				}
+				if (sort) {
+					call = call.sort(sort);
 				}
 				call.then(function (data) {
 					if (data instanceof Array) {
@@ -197,10 +206,40 @@ module.exports = function (service, models, context) {
 		}
 	};
 
+	let CountContext = function (model) {
+		return function (query) {
+			return new Promise(function (resolve) {
+				model.count(query).then(function (data) {
+					resolve(data);
+				}).catch(function (err) {
+					_self.service.log.exception.data_exception.args(err).throw(context);
+				});
+			});
+		}
+	};
+
 	let AggregateContext = function (model) {
 		return function (params) {
 			return new Promise(function (resolve) {
 				model.aggregate(params).then(function (data) {
+					resolve(data);
+				}).catch(function (err) {
+					_self.service.log.exception.data_exception.args(err).throw(context);
+				});
+			});
+		}
+	};
+
+	let PaginateContext = function (model) {
+		return function (query, options) {
+			return new Promise(function (resolve) {
+				let call = model.paginate(query, options);
+				call.then(function (data) {
+					if (data instanceof Array) {
+						for (let i = 0; i < data.length; i++) {
+							setupModel(data[i]);
+						}
+					}
 					resolve(data);
 				}).catch(function (err) {
 					_self.service.log.exception.data_exception.args(err).throw(context);
@@ -265,6 +304,8 @@ module.exports = function (service, models, context) {
 			_self.create[key] = new CreateContext(model);
 			_self.delete[key] = new DeleteContext(model);
 			_self.aggregate[key] = new AggregateContext(model);
+			_self.count[key] = new CountContext(model);
+			_self.paginate[key] = new PaginateContext(model);
 		}
 	}
 
