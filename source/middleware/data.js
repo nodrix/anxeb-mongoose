@@ -197,7 +197,7 @@ module.exports = function (service, models, context) {
 		return function (query) {
 			return new Promise(function (resolve) {
 
-				model.deleteMany(typeof query === 'object' ? query : { _id : query }).then(function () {
+				model.deleteMany(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function () {
 					resolve();
 				}).catch(function (err) {
 					_self.service.log.exception.data_exception.args(err).throw(context);
@@ -209,7 +209,7 @@ module.exports = function (service, models, context) {
 	let CountContext = function (model) {
 		return function (query) {
 			return new Promise(function (resolve) {
-				model.count(query).then(function (data) {
+				model.count(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function (data) {
 					resolve(data);
 				}).catch(function (err) {
 					_self.service.log.exception.data_exception.args(err).throw(context);
@@ -235,9 +235,11 @@ module.exports = function (service, models, context) {
 			return new Promise(function (resolve) {
 				let call = model.paginate(query, options);
 				call.then(function (data) {
-					if (data instanceof Array) {
-						for (let i = 0; i < data.length; i++) {
-							setupModel(data[i]);
+					if (data != null && data.docs != null) {
+						if (data.docs instanceof Array) {
+							for (let i = 0; i < data.docs.length; i++) {
+								setupModel(data.docs[i]);
+							}
 						}
 					}
 					resolve(data);
