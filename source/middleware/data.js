@@ -209,7 +209,7 @@ module.exports = function (service, models, context) {
 	let CountContext = function (model) {
 		return function (query) {
 			return new Promise(function (resolve) {
-				model.count(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function (data) {
+				model.countDocuments(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function (data) {
 					resolve(data);
 				}).catch(function (err) {
 					_self.service.log.exception.data_exception.args(err).throw(context);

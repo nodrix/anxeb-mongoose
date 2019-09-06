@@ -1,6 +1,6 @@
 {
  "name": "anxeb.mongoose",
- "version": "0.1.7",
+ "version": "0.1.8",
  "description": "Anxeb Mongoose ODM",
  "main": "index.js",
  "scripts": {
