@@ -3,11 +3,11 @@
 module.exports = function () {
 	return {
 		data_server_connecting : {
-			message : 'Connecting to data server [0].',
+			message : 'Connecting to data server [0:C].',
 			type    : 'debug_log'
 		},
 		data_server_connected  : {
-			message : 'Connected to data server [0].',
+			message : 'Successfully connected to data server.',
 			type    : 'debug_log'
 		}
 	}

@@ -26,11 +26,11 @@ module.exports = function (service, settings) {
 	});
 
 	_self.context.on('connecting', function () {
-		_service.log.debug.data_server_connecting.args(_settings.uri).print();
+		_service.log.debug.data_server_connecting.args(_settings.key).print();
 	});
 
 	_self.context.on('connected', function () {
-		_service.log.debug.data_server_connected.args(_settings.uri).print();
+		_service.log.debug.data_server_connected.args(_settings.key).print();
 		_self.connected = true;
 	});
 
