@@ -24,8 +24,8 @@ module.exports = function (service, settings) {
 	_self.service.routing.settings.context = _self.service.routing.settings.context || {};
 	_self.service.routing.settings.context.properties = _self.service.routing.settings.context.properties || {};
 
-	_self.service.routing.settings.context.properties['data'] = function () {
-		return new Data(_self.service, _self.models, this);
+	_self.service.routing.settings.context.properties['data'] = function (context) {
+		return new Data(_self.service, _self.models, context);
 	};
 
 	Object.defineProperty(_self.service, 'models', {
