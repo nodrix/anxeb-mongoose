@@ -4,7 +4,7 @@ const path = require('path');
 
 const utils = {
 	data : {
-		populate : function (obj, source, backward) {
+		populate           : function (obj, source, backward) {
 			let model = obj._doc || obj;
 			if (backward === true) {
 				for (let i in source) {
@@ -20,14 +20,14 @@ const utils = {
 				}
 			}
 		},
-		copy     : function (obj) {
+		copy               : function (obj) {
 			if (obj) {
 				return JSON.parse(JSON.stringify(obj));
 			} else {
 				return null;
 			}
 		},
-		validate : function (err, inner) {
+		parseErrorToFields : function (err, options) {
 			if (err && err.name === 'ValidationError') {
 				let fields = [];
 				for (let field in err.errors) {
@@ -40,6 +40,10 @@ const utils = {
 						let pfield = {
 							name : field
 						};
+
+						if (options && options.prefix != null) {
+							pfield.prefix = options.prefix;
+						}
 
 						if (inx > -1) {
 							let index = fName.substring(0, inx);
@@ -60,6 +64,14 @@ const utils = {
 					}
 				}
 
+				return fields;
+			} else {
+				return null;
+			}
+		},
+		validate           : function (err, inner) {
+			let fields = this.parseErrorToFields(err);
+			if (fields != null) {
 				return inner.args(fields.map((field) => field.name).join(', ').trim()).toError({ meta : { fields : fields } });
 			} else {
 				return null;

@@ -18,6 +18,26 @@ module.exports = function (service, models, context) {
 	_self.count = {};
 	_self.paginate = {};
 
+	_self.validate = async function (models) {
+		let fields = [];
+
+		for (let key in models) {
+			let model = models[key];
+			try {
+				await model.validate();
+			} catch (err) {
+				fields = fields.concat(utils.data.parseErrorToFields(err, {
+					prefix : key
+				}) || []);
+			}
+		}
+
+		if (fields.length > 0) {
+			let valErr = context.log.exception.missing_fields.args(fields.map((field) => field.name).join(', ').trim()).toError({ meta : { fields : fields } })
+			_self.service.log.exception.data_validation_exception.args(valErr).throw(context);
+		}
+	}
+
 	let setupModel = function (model) {
 		if (model !== undefined && model !== null) {
 			model.persist = function (params) {
