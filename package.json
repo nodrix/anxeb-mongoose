@@ -1,6 +1,6 @@
 {
  "name": "anxeb-mongoose",
- "version": "1.0.4",
+ "version": "1.0.5",
  "description": "Anxeb Mongoose ODM",
  "main": "index.js",
  "repository": {
@@ -20,8 +20,8 @@
  "homepage": "https://github.com/nodrix/anxeb-mongoose#readme",
  "dependencies": {
   "bluebird": "^3.7.2",
-  "mongoose": "^5.10.13",
-  "mongoose-paginate-v2": "^1.3.6",
+  "mongoose": "^5.12.0",
+  "mongoose-paginate-v2": "^1.3.16",
   "path": "^0.12.7"
  }
 }
