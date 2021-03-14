@@ -111,9 +111,12 @@ module.exports = function (service, models, context) {
 	};
 
 	let FindContext = function (model) {
-		return function (query, populate, sort) {
+		return function (query, populate, sort, select) {
 			return new Promise(function (resolve, reject) {
 				let call = model.findOne(query);
+				if (select) {
+					call = call.select(populate);
+				}
 				if (populate) {
 					call = call.populate(populate);
 				}
@@ -132,9 +135,12 @@ module.exports = function (service, models, context) {
 
 	let ListContext = function (model) {
 		//TODO: This params shoud be consolidated into one (all context classes apply)
-		return function (query, populate, sort) {
+		return function (query, populate, sort, select) {
 			return new Promise(function (resolve) {
 				let call = model.find(query);
+				if (select) {
+					call = call.select(populate);
+				}
 				if (populate) {
 					call = call.populate(populate);
 				}
@@ -156,7 +162,7 @@ module.exports = function (service, models, context) {
 	};
 
 	let RetrieveContext = function (model) {
-		return function (params, populate) {
+		return function (params, populate, select) {
 			return new Promise(function (resolve) {
 				if (params == null) {
 					resolve(null);
@@ -166,6 +172,9 @@ module.exports = function (service, models, context) {
 						call = model.findById(params);
 					} else {
 						call = model.findOne(params);
+					}
+					if (select) {
+						call = call.select(select);
 					}
 					if (populate) {
 						call = call.populate(populate);
