@@ -46,7 +46,7 @@ module.exports = function (service, settings) {
 			_self.connection.connect().then(function () {
 				resolve();
 			}).catch(function (err) {
-				resolve();
+				reject(err);
 			});
 		});
 	}

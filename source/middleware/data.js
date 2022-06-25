@@ -34,7 +34,7 @@ module.exports = function (service, models, context) {
 
 		if (fields.length > 0) {
 			let valErr = context.log.exception.missing_fields.args(fields.map((field) => field.name).join(', ').trim()).toError({ meta : { fields : fields } })
-			_self.service.log.exception.data_validation_exception.args(valErr).throw(context);
+			context.log.exception.data_validation_exception.args(valErr).throw();
 		}
 	}
 
@@ -64,18 +64,18 @@ module.exports = function (service, models, context) {
 						}
 
 						if (err == null) {
-							_self.service.log.exception.data_validation_exception.include({
+							context.log.exception.data_validation_exception.include({
 								fields : invalids
-							}).throw(context);
+							}).throw();
 						} else {
 							let valErr = utils.data.validate(err, context.log.exception.missing_fields);
 							if (valErr) {
 								if (valErr.meta.fields != null && valErr.meta.fields instanceof Array && invalids.length > 0) {
 									valErr.meta.fields = valErr.meta.fields.concat(invalids)
 								}
-								_self.service.log.exception.data_validation_exception.args(valErr).throw(context);
+								context.log.exception.data_validation_exception.args(valErr).throw();
 							} else {
-								_self.service.log.exception.data_exception.args(err).throw(context);
+								context.log.exception.data_exception.args(err).throw();
 							}
 						}
 					};
@@ -100,9 +100,9 @@ module.exports = function (service, models, context) {
 					}).catch(function (err) {
 						let valErr = utils.data.validate(err, context.log.exception.missing_fields);
 						if (valErr) {
-							_self.service.log.exception.data_validation_exception.args(valErr).throw(context);
+							context.log.exception.data_validation_exception.args(valErr).throw();
 						} else {
-							_self.service.log.exception.data_exception.args(err).throw(context);
+							context.log.exception.data_exception.args(err).throw();
 						}
 					});
 				});
@@ -127,7 +127,7 @@ module.exports = function (service, models, context) {
 					setupModel(data);
 					resolve(data);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -155,7 +155,7 @@ module.exports = function (service, models, context) {
 					}
 					resolve(data);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -183,7 +183,7 @@ module.exports = function (service, models, context) {
 						setupModel(data);
 						resolve(data);
 					}).catch(function (err) {
-						_self.service.log.exception.data_exception.args(err).throw(context);
+						context.log.exception.data_exception.args(err).throw();
 					});
 				}
 			});
@@ -207,7 +207,7 @@ module.exports = function (service, models, context) {
 						setupModel(data);
 						resolve(data);
 					}).catch(function (err) {
-						_self.service.log.exception.data_exception.args(err).throw(context);
+						context.log.exception.data_exception.args(err).throw();
 					});
 				}
 			});
@@ -229,7 +229,7 @@ module.exports = function (service, models, context) {
 				model.deleteMany(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function () {
 					resolve();
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -241,7 +241,7 @@ module.exports = function (service, models, context) {
 				model.countDocuments(typeof query === 'object' && !(query instanceof mongoose.Types.ObjectId) ? query : { _id : query }).then(function (data) {
 					resolve(data);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -253,7 +253,7 @@ module.exports = function (service, models, context) {
 				model.aggregate(params).then(function (data) {
 					resolve(data);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -273,7 +273,7 @@ module.exports = function (service, models, context) {
 					}
 					resolve(data);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		}
@@ -321,7 +321,7 @@ module.exports = function (service, models, context) {
 					}
 					resolve(result);
 				}).catch(function (err) {
-					_self.service.log.exception.data_exception.args(err).throw(context);
+					context.log.exception.data_exception.args(err).throw();
 				});
 			});
 		};
