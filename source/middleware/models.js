@@ -79,6 +79,12 @@ module.exports = function (service, connection, modelsPath) {
 				}
 			}
 
+			if (params.indexes) {
+				for (const m of params.indexes) {
+					schema.index(...m);
+				}
+			}
+
 			if (params.plugins) {
 				for (let p in params.plugins) {
 					schema.plugin(params.plugins[p]);
